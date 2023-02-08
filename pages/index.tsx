@@ -25,13 +25,13 @@ export async function getStaticProps(): Promise<
   GetStaticPropsResult<{ users: User[] }>
   // eslint-disable-next-line indent
 > {
-  const users = await graphqlClient
-    .request<{ users: User[] }>(GET_USERS)
-    .then(({ users }) => users);
+  // const users = await graphqlClient
+  //   .request<{ users: User[] }>(GET_USERS)
+  //   .then(({ users }) => users);
 
   return {
     props: {
-      users,
+      users: []
     },
   };
 }
