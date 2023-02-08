@@ -30,7 +30,15 @@ export const GET_USERS = gql`
   query getUsers {
     users {
       ...UserParts
+      tasks {
+        ...TaskParts
+      }
+      roles {
+        ...RoleParts
+      }
     }
   }
   ${USER_FRAGMENT}
+  ${TASK_FRAGMENT}
+  ${ROLE_FRAGMENT}
 `;
