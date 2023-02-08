@@ -1,4 +1,15 @@
+import { Prisma } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import {
+  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql';
 import { Field, ObjectType } from 'type-graphql';
+
+import { IContext } from './../../types/index';
 
 @ObjectType()
 export class UserType {
@@ -17,3 +28,90 @@ export class UserType {
   @Field(() => String, { name: 'email' })
   email!: string;
 }
+
+export const User = new GraphQLObjectType({
+  name: 'UserType',
+  description: 'User',
+  fields: () => {
+    return {
+      id: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+      firstName: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+      lastName: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+      username: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+      email: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+    };
+  },
+});
+
+export const createUserInput = new GraphQLInputObjectType({
+  name: 'createUserInput',
+  description: 'Create User Input',
+  fields: () => {
+    return {
+      firstName: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+      lastName: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+      username: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+      email: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+      password: {
+        type: new GraphQLNonNull(GraphQLString),
+      },
+    };
+  },
+});
+
+export const getUsers = {
+  users: {
+    type: new GraphQLList(User),
+    name: 'getUsers',
+    description: 'Get Users',
+    resolve: async (a: unknown, b: unknown, { prisma }: IContext) => {
+      const users = await prisma.user.findMany();
+      return users;
+    },
+  },
+};
+
+export const createUser = {
+  createUser: {
+    type: User,
+    name: 'createUser',
+    description: 'Create User',
+    args: {
+      createUserInput: {
+        type: createUserInput,
+        nullable: false,
+      },
+    },
+    resolve: async (source: unknown, args: unknown, { prisma }: IContext) => {
+      const { createUserInput } = args as {
+        createUserInput: Prisma.UserCreateInput;
+      };
+      const hashedPassword = bcrypt.hashSync(createUserInput.password, 10);
+      const user = await prisma.user.create({
+        data: {
+          ...createUserInput,
+          password: hashedPassword,
+        },
+      });
+      return user;
+    },
+  },
+};
