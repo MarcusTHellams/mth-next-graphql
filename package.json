@@ -9,6 +9,9 @@
     "lint": "eslint . --config .eslintrc.build.json --ext .ts,.tsx --fix --ignore-path .gitignore",
     "format": "prettier --write . --ignore-path .gitignore"
   },
+  "engines": {
+    "node": "^14.18.0 "
+  },
   "dependencies": {
     "@apollo/server": "^4.3.1",
     "@as-integrations/next": "^1.2.0",
