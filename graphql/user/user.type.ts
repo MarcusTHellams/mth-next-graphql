@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { type User as USER, Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import {
   GraphQLInputObjectType,
@@ -9,6 +9,7 @@ import {
 } from 'graphql';
 import { Field, ObjectType } from 'type-graphql';
 
+import { Role } from '../role/role.type';
 import { IContext } from './../../types/index';
 
 @ObjectType()
@@ -48,6 +49,18 @@ export const User = new GraphQLObjectType({
       },
       email: {
         type: new GraphQLNonNull(GraphQLString),
+      },
+      roles: {
+        type: new GraphQLList(Role),
+        async resolve(source: USER, args: unknown, { prisma }: IContext) {
+          const user = await prisma.user.findFirst({
+            where: { id: source.id },
+            select: {
+              roles: true,
+            },
+          });
+          return user?.roles;
+        },
       },
     };
   },
