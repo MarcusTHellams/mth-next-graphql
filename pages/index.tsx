@@ -1,9 +1,8 @@
-import { type GetStaticPropsResult } from 'next';
+import { User } from '@prisma/client';
+import { type GetServerSidePropsResult } from 'next';
 import Head from 'next/head';
 
-import { graphqlClient } from '@/graphql/client/graphql.client';
-import { GET_USERS } from '@/graphql/queries';
-import { User } from '@/types';
+import { exclude, prisma } from '@/utils';
 
 export default function Home({ users }: { users: User[] }) {
   return (
@@ -21,13 +20,19 @@ export default function Home({ users }: { users: User[] }) {
   );
 }
 
-export async function getStaticProps(): Promise<
-  GetStaticPropsResult<{ users: User[] }>
+export async function getServerSideProps(): Promise<
+  GetServerSidePropsResult<{ users: Omit<User, 'password'>[] }>
   // eslint-disable-next-line indent
 > {
-  const users = await graphqlClient
-    .request<{ users: User[] }>(GET_USERS)
-    .then(({ users }) => users);
+  const usersWithPasswords = await prisma.user.findMany({
+    include: {
+      roles: true,
+      tasks: true,
+    },
+  });
+  const users = usersWithPasswords.map((user) => {
+    return exclude(user, ['password']);
+  });
 
   return {
     props: {
